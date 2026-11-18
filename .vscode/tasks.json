@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Copy properties",
+      "type": "process",
+      "command": "node",
+      "args": ["scripts/copy-properties.mjs"],
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Home Send API",
+      "type": "process",
+      "command": "node",
+      "args": ["node_modules/tsx/dist/cli.mjs", "src/dev-server.ts"],
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      },
+      "dependsOn": ["Copy properties"],
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "homesend-api",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "listening on"
+        }
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated",
+        "group": "homesend"
+      }
+    }
+  ]
+}
