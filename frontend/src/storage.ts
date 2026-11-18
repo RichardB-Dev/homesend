@@ -10,14 +10,16 @@ const templateKey = `homesend.template.${agent.email}`;
 const sentKey = `homesend.sent.${agent.email}`;
 const sentLimit = 50;
 
-const filterKeys = ["transaction", "type", "municipality", "minBeds", "minPrice", "maxPrice"] as const;
+const stringFilterKeys = ["transaction", "type", "minBeds", "minPrice", "maxPrice"] as const;
 
-export type ListFilters = Record<(typeof filterKeys)[number], string>;
+export type ListFilters = {
+  municipality: string[];
+} & Record<(typeof stringFilterKeys)[number], string>;
 
 export const emptyListFilters: ListFilters = {
+  municipality: [],
   transaction: "",
   type: "",
-  municipality: "",
   minBeds: "",
   minPrice: "",
   maxPrice: "",
@@ -86,9 +88,15 @@ export function readListView(): ListView {
   try {
     const parsed = JSON.parse(raw) as Partial<ListView>;
     if (parsed.filters && typeof parsed.filters === "object") {
-      for (const key of filterKeys) {
+      for (const key of stringFilterKeys) {
         const value = parsed.filters[key];
         if (typeof value === "string") filters[key] = value;
+      }
+      const towns = parsed.filters.municipality;
+      if (Array.isArray(towns)) {
+        filters.municipality = towns.filter((value): value is string => typeof value === "string" && value.length > 0);
+      } else if (typeof towns === "string" && towns) {
+        filters.municipality = [towns];
       }
     }
     const scrollY = typeof parsed.scrollY === "number" && parsed.scrollY > 0 ? parsed.scrollY : 0;
@@ -111,8 +119,12 @@ export function rememberListScroll(): void {
   writeListView({ ...saved, scrollY: window.scrollY });
 }
 
+function filterIsOn(value: string | string[]): boolean {
+  return Array.isArray(value) ? value.length > 0 : Boolean(value);
+}
+
 export function listIsNarrowed(view: ListView = readListView()): boolean {
-  return view.query.trim().length > 0 || Object.values(view.filters).some(Boolean);
+  return view.query.trim().length > 0 || Object.values(view.filters).some(filterIsOn);
 }
 
 export function readSelection(): string[] {

@@ -6,18 +6,20 @@ import { formatPrice, metaLine, shortSummary } from "../format";
 import { readSession } from "../storage";
 import type { Property } from "../types";
 
-const points = [
+const sampleIds = ["bemd1888", "bemd3173", "bemv1806", "bemd1186"];
+
+const oldWay = [
   {
-    title: "A handful of homes",
-    body: "Keep up to eight. The client sees a choice, and every home is one you would show.",
+    title: "Hunt on your site",
+    body: "You open the catalogue and look for homes that fit the client in front of you.",
   },
   {
-    title: "A note in your voice",
-    body: "The introduction and the close are yours. They are waiting the next time you write.",
+    title: "Gather the detail",
+    body: "Another tab for more information. Another place for photographs, prices, and links.",
   },
   {
-    title: "A reply to you",
-    body: "The message arrives from you. The client answers you.",
+    title: "Paste up an email",
+    body: "You build the message by hand—copying, pasting, checking—until it looks ready to send.",
   },
 ];
 
@@ -25,7 +27,7 @@ const steps = [
   {
     n: "01",
     title: "Choose",
-    body: "Search the catalogue by town, price, and size. Keep the homes that fit this client.",
+    body: "Search by town, price, and size. Keep the homes that fit this client—up to eight.",
   },
   {
     n: "02",
@@ -42,6 +44,14 @@ const steps = [
 const sampleIntro =
   "Here are a few homes that fit what you're looking for. Tell me which ones you'd like to see, and I can arrange the viewings.";
 
+function pickSample(list: Property[]): Property[] {
+  const byId = new Map(list.map((property) => [property.id, property]));
+  const chosen = sampleIds.map((id) => byId.get(id)).filter((property): property is Property => Boolean(property));
+  if (chosen.length >= 3) return chosen;
+  const rest = list.filter((property) => !sampleIds.includes(property.id) && property.imageUrl.startsWith("https://"));
+  return [...chosen, ...rest].slice(0, 4);
+}
+
 export function HomePage() {
   const signedIn = Boolean(readSession());
   const [sample, setSample] = useState<Property[]>([]);
@@ -50,7 +60,7 @@ export function HomePage() {
     let active = true;
     fetchProperties()
       .then((list) => {
-        if (active) setSample(list.slice(0, 2));
+        if (active) setSample(pickSample(list));
       })
       .catch(() => {
         if (active) setSample([]);
@@ -69,11 +79,11 @@ export function HomePage() {
         <div className="home-copy">
           <p className="eyebrow">
             <img src={homeSend.logo} alt="" />
-            Home Send
+            {homeSend.name}
           </p>
-          <h1>Send the right homes in one email.</h1>
+          <h1>From shortlist to inbox in one go.</h1>
           <p className="home-lead">
-            Pick the homes that fit. Write a short note. Your client opens one email, with your name on it.
+            Pick the homes that fit. Write a short note. Your client opens one finished email—with your name on it.
           </p>
           <div className="home-actions">
             <Link className="button" to={next}>
@@ -86,47 +96,34 @@ export function HomePage() {
         </div>
         <figure className="home-photo">
           <picture>
-            <source media="(max-width: 800px)" srcSet="/hero-portrait.png" />
-            <img src="/hero.png" alt="" />
+            <source media="(max-width: 800px)" srcSet="/hero-portrait.jpg" />
+            <img src="/hero.jpg" alt="" />
           </picture>
-          <figcaption>The email they open.</figcaption>
         </figure>
       </section>
 
-      <section className="home-sell" aria-labelledby="offer-title">
-        <p className="home-kicker">What the client receives</p>
-        <h2 id="offer-title">One message, ready to forward.</h2>
+      <section className="home-problem" aria-labelledby="problem-title">
+        <p className="home-kicker">The old way</p>
+        <h2 id="problem-title">Too many tabs for one list.</h2>
+        <p className="home-problem-lead">
+          Agents still build client emails the slow way: hunt on the site, dig for detail elsewhere, then copy and paste until the message looks right.
+        </p>
         <div className="home-points">
-          {points.map((point) => (
+          {oldWay.map((point) => (
             <article key={point.title}>
               <h3>{point.title}</h3>
               <p>{point.body}</p>
             </article>
           ))}
         </div>
-      </section>
-
-      <section className="home-steps" aria-labelledby="steps-title">
-        <div>
-          <p className="home-kicker">How a list goes out</p>
-          <h2 id="steps-title">Three moves, then it is in their inbox.</h2>
-        </div>
-        <ol>
-          {steps.map((step) => (
-            <li key={step.n}>
-              <span>{step.n}</span>
-              <h3>{step.title}</h3>
-              <p>{step.body}</p>
-            </li>
-          ))}
-        </ol>
+        <p className="home-problem-punch">The shortlist email, without the busywork.</p>
       </section>
 
       <section className="home-sample" id="sample" aria-labelledby="sample-title">
         <div className="home-sample-copy">
-          <p className="home-kicker">The product</p>
-          <h2 id="sample-title">This is the email.</h2>
-          <p>Photographs, a price, the town, and a short note in your voice. Your name closes it.</p>
+          <p className="home-kicker">The email</p>
+          <h2 id="sample-title">This is what they open.</h2>
+          <p>Photographs, prices, towns, and a short note in your voice—already put together.</p>
           <Link className="button" to={next}>
             {action}
           </Link>
@@ -136,7 +133,7 @@ export function HomePage() {
             <article className="home-letter" aria-label="Sample email">
               <header>
                 <img src={homeSend.logo} alt="" />
-                <strong>Home Send</strong>
+                <strong>{homeSend.name}</strong>
               </header>
               <div className="home-letter-body">
                 <h3>Hello Anna,</h3>
@@ -156,7 +153,7 @@ export function HomePage() {
                 })}
               </div>
               <footer>
-                <p>Sent with Home Send</p>
+                <p>Sent with {homeSend.name}</p>
               </footer>
             </article>
           ) : (
@@ -165,10 +162,26 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="home-close">
-        <img src="/hero-detail.png" alt="" />
+      <section className="home-steps" aria-labelledby="steps-title">
         <div>
-          <h2>The next client is one list away.</h2>
+          <p className="home-kicker">How it works</p>
+          <h2 id="steps-title">Three moves, then it is in their inbox.</h2>
+        </div>
+        <ol>
+          {steps.map((step) => (
+            <li key={step.n}>
+              <span>{step.n}</span>
+              <h3>{step.title}</h3>
+              <p>{step.body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="home-close">
+        <img src="/hero-detail.jpg" alt="" />
+        <div>
+          <h2>One shortlist. One email. Done.</h2>
           <Link className="button" to={next}>
             {action}
           </Link>

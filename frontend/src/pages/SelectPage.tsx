@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { fetchProperties } from "../api";
 import { limits } from "../branding";
 import { PropertyCard } from "../components/PropertyCard";
@@ -17,6 +17,10 @@ function unique(values: string[]): string[] {
   return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
 }
 
+function filterIsOn(value: string | string[]): boolean {
+  return Array.isArray(value) ? value.length > 0 : Boolean(value);
+}
+
 function matches(property: Property, query: string, filters: Filters): boolean {
   const needle = query.trim().toLowerCase();
   if (needle) {
@@ -27,7 +31,7 @@ function matches(property: Property, query: string, filters: Filters): boolean {
   }
   if (filters.transaction && property.transaction !== filters.transaction) return false;
   if (filters.type && property.type !== filters.type) return false;
-  if (filters.municipality && property.municipality !== filters.municipality) return false;
+  if (filters.municipality.length > 0 && !filters.municipality.includes(property.municipality)) return false;
   if (filters.minBeds && (property.bedrooms ?? 0) < Number(filters.minBeds)) return false;
   if (filters.minPrice && property.price.amount < Number(filters.minPrice)) return false;
   if (filters.maxPrice && property.price.amount > Number(filters.maxPrice)) return false;
@@ -88,10 +92,20 @@ export function SelectPage() {
     () => properties.filter((property) => matches(property, query, filters)),
     [properties, query, filters],
   );
-  const filtersOn = Object.values(filters).some(Boolean);
+  const filtersOn = Object.values(filters).some(filterIsOn);
+  const towns = useMemo(() => unique(properties.map((property) => property.municipality)), [properties]);
 
   function updateFilter<K extends keyof Filters>(key: K, value: Filters[K]) {
     setFilters((current) => ({ ...current, [key]: value }));
+  }
+
+  function toggleTown(town: string) {
+    setFilters((current) => {
+      const selected = current.municipality.includes(town)
+        ? current.municipality.filter((value) => value !== town)
+        : [...current.municipality, town].sort((a, b) => a.localeCompare(b));
+      return { ...current, municipality: selected };
+    });
   }
 
   return (
@@ -120,6 +134,7 @@ export function SelectPage() {
         </div>
 
         <div className="filters">
+          <TownFilter options={towns} selected={filters.municipality} onToggle={toggleTown} onClear={() => updateFilter("municipality", [])} />
           <label>
             Transaction
             <select value={filters.transaction} onChange={(event) => updateFilter("transaction", event.target.value)}>
@@ -136,17 +151,6 @@ export function SelectPage() {
             <select value={filters.type} onChange={(event) => updateFilter("type", event.target.value)}>
               <option value="">Any</option>
               {unique(properties.map((property) => property.type)).map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Town
-            <select value={filters.municipality} onChange={(event) => updateFilter("municipality", event.target.value)}>
-              <option value="">Any</option>
-              {unique(properties.map((property) => property.municipality)).map((value) => (
                 <option key={value} value={value}>
                   {value}
                 </option>
@@ -186,6 +190,11 @@ export function SelectPage() {
 
         {filtersOn ? (
           <div className="chips">
+            {filters.municipality.map((town) => (
+              <button type="button" key={town} onClick={() => toggleTown(town)}>
+                {town} <span aria-hidden="true">×</span>
+              </button>
+            ))}
             {filters.transaction ? (
               <button type="button" onClick={() => updateFilter("transaction", "")}>
                 {titleCase(filters.transaction)} <span aria-hidden="true">×</span>
@@ -194,11 +203,6 @@ export function SelectPage() {
             {filters.type ? (
               <button type="button" onClick={() => updateFilter("type", "")}>
                 {filters.type} <span aria-hidden="true">×</span>
-              </button>
-            ) : null}
-            {filters.municipality ? (
-              <button type="button" onClick={() => updateFilter("municipality", "")}>
-                {filters.municipality} <span aria-hidden="true">×</span>
               </button>
             ) : null}
             {filters.minBeds ? (
@@ -294,6 +298,78 @@ export function SelectPage() {
         onClear={shortlist.clear}
         onSent={shortlist.clear}
       />
+    </div>
+  );
+}
+
+function TownFilter({
+  options,
+  selected,
+  onToggle,
+  onClear,
+}: {
+  options: string[];
+  selected: string[];
+  onToggle: (town: string) => void;
+  onClear: () => void;
+}) {
+  const listId = useId();
+  const root = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const label =
+    selected.length === 0 ? "Any" : selected.length === 1 ? selected[0] : `${selected.length} towns`;
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointer(event: MouseEvent) {
+      if (root.current && !root.current.contains(event.target as Node)) setOpen(false);
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    window.addEventListener("mousedown", onPointer);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("mousedown", onPointer);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="town-filter" ref={root}>
+      <span id={listId}>Town</span>
+      <button
+        type="button"
+        className="town-trigger"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-labelledby={listId}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span>{label}</span>
+        <svg viewBox="0 0 12 12" aria-hidden="true">
+          <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      {open ? (
+        <div className="town-menu" role="listbox" aria-multiselectable="true" aria-labelledby={listId}>
+          {options.length === 0 ? <p className="town-empty">No towns yet</p> : null}
+          {options.map((town) => {
+            const checked = selected.includes(town);
+            return (
+              <label key={town} className={checked ? "is-on" : undefined}>
+                <input type="checkbox" checked={checked} onChange={() => onToggle(town)} />
+                <span>{town}</span>
+              </label>
+            );
+          })}
+          {selected.length > 0 ? (
+            <button type="button" className="text-button town-clear" onClick={onClear}>
+              Clear towns
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
