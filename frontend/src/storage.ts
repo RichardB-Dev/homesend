@@ -1,3 +1,4 @@
+import { clearPropertiesCache } from "./api";
 import { agent, defaultFooter, defaultIntro, limits, previousDefaultFooter } from "./branding";
 import { exampleDrafts } from "./exampleSent";
 import type { Property, SentHome, SentRecord } from "./types";
@@ -6,6 +7,7 @@ import { shortSummary } from "./format";
 const sessionKey = "homesend.session";
 const selectionKey = "homesend.selection";
 const listKey = "homesend.list";
+const listScrollRestoreKey = "homesend.list.restore";
 const templateKey = `homesend.template.${agent.email}`;
 const sentKey = `homesend.sent.${agent.email}`;
 const sentLimit = 50;
@@ -79,6 +81,8 @@ export function signOut(): void {
   sessionStorage.removeItem(sessionKey);
   sessionStorage.removeItem(selectionKey);
   sessionStorage.removeItem(listKey);
+  sessionStorage.removeItem(listScrollRestoreKey);
+  clearPropertiesCache();
 }
 
 export function readListView(): ListView {
@@ -117,6 +121,15 @@ export function writeListView(view: ListView): void {
 export function rememberListScroll(): void {
   const saved = readListView();
   writeListView({ ...saved, scrollY: window.scrollY });
+  sessionStorage.setItem(listScrollRestoreKey, "1");
+}
+
+/** Returns saved scroll only when returning from a property; otherwise 0. */
+export function consumeListScrollRestore(): number {
+  const shouldRestore = sessionStorage.getItem(listScrollRestoreKey) === "1";
+  sessionStorage.removeItem(listScrollRestoreKey);
+  if (!shouldRestore) return 0;
+  return readListView().scrollY;
 }
 
 function filterIsOn(value: string | string[]): boolean {

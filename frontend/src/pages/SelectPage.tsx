@@ -5,7 +5,7 @@ import { PropertyCard } from "../components/PropertyCard";
 import { ShortlistBar } from "../components/ShortlistBar";
 import { TopBar } from "../components/TopBar";
 import { formatGroupedDigits, formatPrice, homeCount, parseGroupedDigits, titleCase } from "../format";
-import { emptyListFilters, readListView, writeListView, type ListFilters } from "../storage";
+import { consumeListScrollRestore, emptyListFilters, readListView, writeListView, type ListFilters } from "../storage";
 import type { Property } from "../types";
 import { useShortlist } from "../useShortlist";
 
@@ -91,9 +91,10 @@ export function SelectPage() {
 
   useEffect(() => {
     if (loading) return;
-    const scrollY = readListView().scrollY;
+    const scrollY = consumeListScrollRestore();
     const frame = requestAnimationFrame(() => {
       if (scrollY > 0) window.scrollTo(0, scrollY);
+      else window.scrollTo(0, 0);
       placed.current = true;
     });
     return () => cancelAnimationFrame(frame);
@@ -279,7 +280,7 @@ export function SelectPage() {
               onClick={() => {
                 setLoading(true);
                 setError(null);
-                fetchProperties()
+                fetchProperties({ force: true })
                   .then(setProperties)
                   .catch(() => setError("The property list didn’t load."))
                   .finally(() => setLoading(false));

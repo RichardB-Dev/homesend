@@ -1,10 +1,34 @@
 import type { Property } from "./types";
 
-export async function fetchProperties(): Promise<Property[]> {
-  const response = await fetch("/api/properties");
-  if (!response.ok) throw new Error("The property list could not be loaded.");
-  const data = (await response.json()) as { properties?: Property[] };
-  return data.properties ?? [];
+let cachedProperties: Property[] | null = null;
+let inflightProperties: Promise<Property[]> | null = null;
+
+export function clearPropertiesCache(): void {
+  cachedProperties = null;
+  inflightProperties = null;
+}
+
+export async function fetchProperties(options?: { force?: boolean }): Promise<Property[]> {
+  if (options?.force) clearPropertiesCache();
+  if (cachedProperties) return cachedProperties;
+  if (inflightProperties) return inflightProperties;
+
+  inflightProperties = (async () => {
+    try {
+      const response = await fetch("/api/properties");
+      if (!response.ok) throw new Error("The property list could not be loaded.");
+      const data = (await response.json()) as { properties?: Property[] };
+      cachedProperties = data.properties ?? [];
+      return cachedProperties;
+    } catch (error) {
+      cachedProperties = null;
+      throw error;
+    } finally {
+      inflightProperties = null;
+    }
+  })();
+
+  return inflightProperties;
 }
 
 export async function sendClientEmail(payload: {

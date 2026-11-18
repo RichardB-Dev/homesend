@@ -52,41 +52,6 @@ function pickSample(list: Property[]): Property[] {
   return [...chosen, ...rest].slice(0, 4);
 }
 
-function SampleLetter({ properties, compact = false }: { properties: Property[]; compact?: boolean }) {
-  const shown = compact ? properties.slice(0, 2) : properties;
-  if (properties.length === 0) {
-    return <p className="home-sample-wait">A sample list will appear here when the catalogue is available.</p>;
-  }
-  return (
-    <article className={compact ? "home-letter home-letter-compact" : "home-letter"} aria-label="Sample email">
-      <header>
-        <img src={homeSend.logo} alt="" />
-        <strong>{homeSend.name}</strong>
-      </header>
-      <div className="home-letter-body">
-        <h3>Hello Anna,</h3>
-        <p>{sampleIntro}</p>
-        {shown.map((property) => {
-          const meta = metaLine(property);
-          return (
-            <section key={property.id}>
-              <img src={property.imageUrl} alt="" />
-              {property.municipality ? <p className="home-letter-kicker">{property.municipality}</p> : null}
-              <h4>{property.title}</h4>
-              <p className="home-letter-price">{formatPrice(property.price.amount, property.price.currency)}</p>
-              {meta ? <p className="home-letter-meta">{meta}</p> : null}
-              {!compact ? <p>{shortSummary(property.summary, 180)}</p> : null}
-            </section>
-          );
-        })}
-      </div>
-      <footer>
-        <p>Sent with {homeSend.name}</p>
-      </footer>
-    </article>
-  );
-}
-
 export function HomePage() {
   const signedIn = Boolean(readSession());
   const [sample, setSample] = useState<Property[]>([]);
@@ -129,13 +94,9 @@ export function HomePage() {
             </a>
           </div>
         </div>
-        <div className="home-hero-visual">
-          <SampleLetter properties={sample} compact />
-        </div>
-      </section>
-
-      <section className="home-atmosphere" aria-hidden="true">
-        <img src="/hero.jpg" alt="" />
+        <figure className="home-photo">
+          <img src="/hero.jpg" alt="" />
+        </figure>
       </section>
 
       <section className="home-problem" aria-labelledby="problem-title">
@@ -165,7 +126,34 @@ export function HomePage() {
           </Link>
         </div>
         <div className="home-sample-letter">
-          <SampleLetter properties={sample} />
+          {sample.length > 0 ? (
+            <article className="home-letter" aria-label="Sample email">
+              <header>
+                <img src={homeSend.logo} alt="" />
+                <strong>{homeSend.name}</strong>
+              </header>
+              <div className="home-letter-body">
+                <h3>Hello Anna,</h3>
+                <p>{sampleIntro}</p>
+                {sample.map((property) => {
+                  const meta = metaLine(property);
+                  return (
+                    <section key={property.id}>
+                      <img src={property.imageUrl} alt="" />
+                      {property.municipality ? <p className="home-letter-kicker">{property.municipality}</p> : null}
+                      <h4>{property.title}</h4>
+                      <p className="home-letter-price">{formatPrice(property.price.amount, property.price.currency)}</p>
+                      {meta ? <p className="home-letter-meta">{meta}</p> : null}
+                      <p>{shortSummary(property.summary, 180)}</p>
+                    </section>
+                  );
+                })}
+              </div>
+              <footer>
+                <p>Sent with {homeSend.name}</p>
+              </footer>
+            </article>
+          ) : null}
         </div>
       </section>
 
