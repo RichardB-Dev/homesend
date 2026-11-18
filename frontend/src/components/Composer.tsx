@@ -89,6 +89,7 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
     setClientEmail(client.email);
     setSuggestField(null);
     setFieldError(null);
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   }
 
   function onSuggestKey(event: ReactKeyboardEvent<HTMLInputElement>) {
@@ -188,7 +189,12 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
         if (event.target === event.currentTarget && !sending) onClose();
       }}
     >
-      <section className="sheet" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+      <section
+        className={suggestions.length > 0 ? "sheet has-suggest" : "sheet"}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+      >
         <header className="sheet-head">
           <div>
             <h2 id={titleId}>{result ? "Ready" : "Send to client"}</h2>

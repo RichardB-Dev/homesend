@@ -1684,6 +1684,10 @@ input[readonly] { background: #f7f4ef; }
   background: rgba(244, 240, 234, 0.96);
 }
 
+.sheet.has-suggest .composer-foot {
+  display: none;
+}
+
 .composer-foot .button {
   width: 100%;
 }
@@ -1814,11 +1818,11 @@ input[readonly] { background: #f7f4ef; }
 
 .suggest { position: relative; display: block; }
 
-.suggest:focus-within { z-index: 4; }
+.suggest:focus-within { z-index: 6; }
 
 .suggest-list {
   position: absolute;
-  z-index: 3;
+  z-index: 6;
   left: 0;
   right: 0;
   top: calc(100% + 6px);
@@ -1829,7 +1833,7 @@ input[readonly] { background: #f7f4ef; }
   border: 1px solid var(--line);
   border-radius: 12px;
   box-shadow: var(--shadow);
-  max-height: 280px;
+  max-height: min(280px, 42svh);
   overflow: auto;
 }
 
@@ -1841,7 +1845,9 @@ input[readonly] { background: #f7f4ef; }
   border: 0;
   background: transparent;
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 10px;
+  min-height: 48px;
+  align-content: center;
   color: var(--ink);
   font-weight: 600;
 }
