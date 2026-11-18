@@ -19,6 +19,12 @@ jobs:
         with:
           submodules: true
           lfs: false
+      - name: Add mailbox secrets for the API
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+        run: node -e "const fs=require('fs'); fs.writeFileSync('api/mail.secrets.json', JSON.stringify({SMTP_USER:process.env.SMTP_USER||'',SMTP_PASSWORD:process.env.SMTP_PASSWORD||'',MAIL_FROM:process.env.MAIL_FROM||''}, null, 2));"
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1

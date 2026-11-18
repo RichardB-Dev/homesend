@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import nodemailer from "nodemailer";
 import { agency, agent, limits } from "./branding";
 import { loadProperties } from "./catalog";
@@ -10,8 +12,32 @@ function text(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function readMailFile(name: string): Record<string, string> {
+  const candidates = [path.join(process.cwd(), name), path.join(__dirname, "..", name)];
+  for (const file of candidates) {
+    if (!fs.existsSync(file)) continue;
+    try {
+      return JSON.parse(fs.readFileSync(file, "utf8")) as Record<string, string>;
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
+const mailSettings = readMailFile("mail.settings.json");
+const mailSecrets = readMailFile("mail.secrets.json");
+
+function setting(name: string, fallback = ""): string {
+  const fromEnv = text(process.env[name]);
+  if (fromEnv) return fromEnv;
+  const fromSecrets = text(mailSecrets[name]);
+  if (fromSecrets) return fromSecrets;
+  return text(mailSettings[name]) || fallback;
+}
+
 function dryRun(): boolean {
-  return process.env.DRY_RUN !== "false";
+  return setting("DRY_RUN", "false") === "true";
 }
 
 export async function handleSend(input: SendInput): Promise<SendResult> {
@@ -52,12 +78,12 @@ export async function handleSend(input: SendInput): Promise<SendResult> {
     return { ok: true, delivered: false, previewHtml: html };
   }
 
-  const host = text(process.env.SMTP_HOST);
-  const user = text(process.env.SMTP_USER);
-  const pass = process.env.SMTP_PASSWORD ?? "";
-  const from = text(process.env.MAIL_FROM);
-  const fromName = text(process.env.MAIL_FROM_NAME) || agent.name;
-  const port = Number(process.env.SMTP_PORT || 587);
+  const host = setting("SMTP_HOST", "smtp.gmail.com");
+  const user = setting("SMTP_USER");
+  const pass = setting("SMTP_PASSWORD");
+  const from = setting("MAIL_FROM");
+  const fromName = setting("MAIL_FROM_NAME", agent.name);
+  const port = Number(setting("SMTP_PORT", "587"));
 
   if (!host || !user || !pass || !from) {
     return { ok: false, error: "Mailbox access is not configured." };

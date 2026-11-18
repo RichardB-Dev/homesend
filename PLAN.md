@@ -88,18 +88,18 @@ The email uses the same type, teal, and spacing as the app, so the message the c
 
 [`staticwebapp.config.json`](frontend/public/staticwebapp.config.json) SPA fallback so refresh on the dashboard works.
 
-[`.github/workflows/azure-static-web-apps.yml`](.github/workflows/azure-static-web-apps.yml) uses `Azure/static-web-apps-deploy@v1`:
+[`.github/workflows/azure-static-web-apps-white-moss-0cdfec610.yml`](.github/workflows/azure-static-web-apps-white-moss-0cdfec610.yml) uses `Azure/static-web-apps-deploy@v1`:
 
 - `app_location`: `frontend`
 - `api_location`: `api`
 - `output_location`: `dist`
 - Deploy on push to `main`; preview environments on pull requests
 
-GitHub secret: `AZURE_STATIC_WEB_APPS_API_TOKEN` (from the Static Web App resource).
+GitHub secret: `AZURE_STATIC_WEB_APPS_API_TOKEN_WHITE_MOSS_0CDFEC610` (from the Static Web App resource).
 
-Function app settings (Azure portal, not committed): `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`, `MAIL_FROM_NAME` (`George Nayda`), `DRY_RUN`.
+`api/mail.settings.json` commits `SMTP_HOST`, `SMTP_PORT`, `MAIL_FROM_NAME` (`George Nayda`), and `DRY_RUN` (`false`). `SMTP_USER`, `SMTP_PASSWORD`, and `MAIL_FROM` are GitHub secrets. The deploy workflow writes them for the API. They are not committed.
 
-A short [`README.md`](README.md) covers creating the Static Web App (custom deployment token, not the Azure portal auto-workflow, so this repo owns the workflow file), the secrets, and where to put the mailbox access. Local run is Vite plus `func start`, with the Vite dev server proxying `/api`.
+A short [`README.md`](README.md) covers the Static Web App workflow Azure generated, the deployment secret, and where to put the mailbox access. Local run is Vite plus `func start`, with the Vite dev server proxying `/api`.
 
 Before a live email can leave the app, two things are required: the Static Web App deployment token, and the SMTP (or equivalent) access for the mailbox. The app can be built and checked with dry-run before either exists. The visible sender is George Nayda, with Bromley Estates in the message.
 
@@ -115,7 +115,7 @@ Visual system:
 - Motion is short, about 180–220ms, ease-out. Selection, the bottom bar, and the composer move. Nothing bounces. `prefers-reduced-motion` disables it.
 - Property photos are real photography at a consistent 4:3 crop. Skeleton blocks stand in while the list loads. Focus rings are visible. Hit targets stay at least 44px. The layout is checked at a phone width and a desktop width.
 
-Home. The public page at `/` sells Home Send and carries no agency name, agent name, portrait, phone, office, or website. Its mark is the house icon. The page is charcoal on a neutral ground. The hero promises one email of the right homes, then offers “Send a shortlist” (or “Open the list” when already signed in) and a jump to a sample email. That sample uses the house icon and a charcoal header. Under the hero, the page says what the client receives and the three moves that send a list. A closing band on `hero-detail.png` repeats the action. Sign-in stays at `/sign-in`.
+Home. The public page at `/` sells Home Send and carries no agency name, agent name, portrait, phone, office, or website. Its mark is the card icon, and the page is mint on a pale green ground, separate from the agency teal. Sign-in and the working screens use the agency mark and the warm paper and teal. The hero promises one email of the right homes, then offers “Send a shortlist” (or “Open the list” when already signed in) and a jump to a sample email. That sample uses the house icon and a charcoal header. Under the hero, the page says what the client receives and the three moves that send a list. A closing band on `hero-detail.png` repeats the action. Sign-in stays at `/sign-in`.
 
 Login. A split screen. One side is a full-bleed Costa del Sol photograph with the B mark and one line of positioning. The other side is only the form: George’s name and email already filled, password, and one button, “Continue”. On a phone the photograph becomes a short band above the form. Errors sit under the field that failed.
 
