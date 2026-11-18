@@ -44,6 +44,7 @@ export function SelectPage() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState(() => readListView().query);
   const [filters, setFilters] = useState<Filters>(() => readListView().filters);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const placed = useRef(false);
   const shortlist = useShortlist();
 
@@ -93,6 +94,7 @@ export function SelectPage() {
     [properties, query, filters],
   );
   const filtersOn = Object.values(filters).some(filterIsOn);
+  const activeFilterCount = Object.values(filters).filter(filterIsOn).length;
   const towns = useMemo(() => unique(properties.map((property) => property.municipality)), [properties]);
 
   function updateFilter<K extends keyof Filters>(key: K, value: Filters[K]) {
@@ -119,21 +121,33 @@ export function SelectPage() {
           </p>
         </header>
 
-        <div className="search-wrap">
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            <circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
-            <path d="M13 13.5 17 17.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
-          <input
-            className="search"
-            value={query}
-            placeholder="Search by name, address, or reference"
-            aria-label="Search by name, address, or reference"
-            onChange={(event) => setQuery(event.target.value)}
-          />
+        <div className="search-row">
+          <div className="search-wrap">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+              <path d="M13 13.5 17 17.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            <input
+              className="search"
+              value={query}
+              placeholder="Search by name, address, or reference"
+              aria-label="Search by name, address, or reference"
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </div>
+          <button
+            type="button"
+            className={filtersOpen || filtersOn ? "filters-toggle is-active" : "filters-toggle"}
+            aria-expanded={filtersOpen}
+            aria-controls="home-filters"
+            onClick={() => setFiltersOpen((open) => !open)}
+          >
+            Filters
+            {activeFilterCount > 0 ? <span className="filters-count">{activeFilterCount}</span> : null}
+          </button>
         </div>
 
-        <div className="filters">
+        <div id="home-filters" className={filtersOpen ? "filters is-open" : "filters"}>
           <TownFilter options={towns} selected={filters.municipality} onToggle={toggleTown} onClear={() => updateFilter("municipality", [])} />
           <label>
             Transaction

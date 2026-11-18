@@ -47,7 +47,6 @@ export function LoginPage() {
               type="password"
               value={password}
               autoComplete="current-password"
-              autoFocus
               onChange={(event) => {
                 setPassword(event.target.value);
                 if (error) setError(null);

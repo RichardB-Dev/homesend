@@ -223,7 +223,6 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
                           setSuggestField("name");
                           if (fieldError) setFieldError(null);
                         }}
-                        autoFocus
                         {...suggestProps("name")}
                       />
                       {suggestField === "name" ? (
