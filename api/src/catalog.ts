@@ -70,6 +70,7 @@ function parseProperty(raw: unknown, fileName: string): Property | null {
     imageUrl,
     images,
     sourceUrl: asString(record.sourceUrl) ?? "",
+    sold: record.sold === true,
   };
 }
 

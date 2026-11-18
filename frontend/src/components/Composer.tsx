@@ -27,6 +27,7 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
   const navigate = useNavigate();
   const titleId = useId();
   const listId = useId();
+  const formId = useId();
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
   const [suggestField, setSuggestField] = useState<SuggestField | null>(null);
@@ -36,6 +37,8 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ delivered: boolean; id: string; count: number; name: string } | null>(null);
+  const canSend =
+    clientName.trim().length > 0 && emailPattern.test(clientEmail.trim()) && intro.trim().length > 0 && footer.trim().length > 0;
 
   const suggestQuery = suggestField === "name" ? clientName : suggestField === "email" ? clientEmail : "";
   const suggestions = useMemo(() => {
@@ -208,7 +211,7 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
             </div>
             <div className="sheet-body">
               <div className="composer-grid" data-pane={pane}>
-                <form className="form-pane" onSubmit={onSubmit}>
+                <form id={formId} className="form-pane" onSubmit={onSubmit}>
                   <label>
                     Client name
                     <span className="suggest">
@@ -218,6 +221,7 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
                         onChange={(event) => {
                           setClientName(event.target.value);
                           setSuggestField("name");
+                          if (fieldError) setFieldError(null);
                         }}
                         autoFocus
                         {...suggestProps("name")}
@@ -237,6 +241,7 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
                         onChange={(event) => {
                           setClientEmail(event.target.value);
                           setSuggestField("email");
+                          if (fieldError) setFieldError(null);
                         }}
                         {...suggestProps("email")}
                       />
@@ -271,15 +276,18 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
                   <button type="button" className="text-button reset" onClick={resetCopy}>
                     Reset intro and footer
                   </button>
-                  {fieldError ? <p className="form-error">{fieldError}</p> : null}
-                  <button type="submit" className="button" disabled={sending}>
-                    {sending ? "Sending…" : "Send email"}
-                  </button>
                 </form>
                 <div className="preview-pane">
                   <EmailPreview clientName={clientName} intro={intro} footer={footer} properties={properties} />
                 </div>
               </div>
+            </div>
+            <div className="composer-foot">
+              {fieldError ? <p className="form-error">{fieldError}</p> : null}
+              {!canSend && !fieldError ? <p className="hint">Add the client’s name and email to send.</p> : null}
+              <button type="submit" form={formId} className="button" disabled={!canSend || sending}>
+                {sending ? "Sending…" : "Send email"}
+              </button>
             </div>
           </>
         )}

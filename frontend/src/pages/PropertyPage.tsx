@@ -234,6 +234,7 @@ export function PropertyPage() {
                   </button>
                 </p>
                 <h1>{property.title}</h1>
+                {property.sold ? <p className="sold-flag">Sold</p> : null}
                 <p className="property-price">{formatPrice(property.price.amount, property.price.currency)}</p>
                 <p className="place">
                   {[property.municipality, property.area, property.province].filter(Boolean).join(" · ")}

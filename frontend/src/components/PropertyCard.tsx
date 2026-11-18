@@ -13,9 +13,10 @@ type Props = {
 export function PropertyCard({ property, selected, onToggle }: Props) {
   const [broken, setBroken] = useState(false);
   const meta = metaLine(property);
+  const sold = property.sold;
 
   return (
-    <article className={selected ? "card is-selected" : "card"}>
+    <article className={[selected ? "card is-selected" : "card", sold ? "is-sold" : ""].filter(Boolean).join(" ")}>
       <Link className="card-link" to={`/property/${property.id}`} onClick={rememberListScroll}>
         <span className="card-media">
           {property.imageUrl && !broken ? (
@@ -23,6 +24,7 @@ export function PropertyCard({ property, selected, onToggle }: Props) {
           ) : (
             <span className="photo-fallback">{property.reference}</span>
           )}
+          {sold ? <span className="sold-pill">Sold</span> : null}
           <span className="price-pill">{formatPrice(property.price.amount, property.price.currency)}</span>
         </span>
         <span className="card-body">
@@ -35,15 +37,17 @@ export function PropertyCard({ property, selected, onToggle }: Props) {
           {meta ? <span className="meta">{meta}</span> : null}
         </span>
       </Link>
-      <button
-        type="button"
-        className={selected ? "card-add is-on" : "card-add"}
-        aria-pressed={selected}
-        aria-label={selected ? `Remove ${property.reference} from the list` : `Add ${property.reference} to the list`}
-        onClick={onToggle}
-      >
-        {selected ? "Added" : "Add"}
-      </button>
+      {sold ? null : (
+        <button
+          type="button"
+          className={selected ? "card-add is-on" : "card-add"}
+          aria-pressed={selected}
+          aria-label={selected ? `Remove ${property.reference} from the list` : `Add ${property.reference} to the list`}
+          onClick={onToggle}
+        >
+          {selected ? "Added" : "Add"}
+        </button>
+      )}
     </article>
   );
 }

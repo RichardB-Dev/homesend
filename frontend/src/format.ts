@@ -8,6 +8,16 @@ export function formatPrice(amount: number, currency = "EUR"): string {
   }).format(amount);
 }
 
+export function parseGroupedDigits(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
+export function formatGroupedDigits(value: string): string {
+  const digits = parseGroupedDigits(value);
+  if (!digits) return "";
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+}
+
 export function formatArea(value: number): string {
   return `${new Intl.NumberFormat("es-ES", { maximumFractionDigits: 2 }).format(value)} m²`;
 }

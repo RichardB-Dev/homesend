@@ -20,6 +20,7 @@ export type Property = {
   imageUrl: string;
   images: string[];
   sourceUrl: string;
+  sold: boolean;
 };
 
 export type SentHome = {

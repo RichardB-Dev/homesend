@@ -711,6 +711,12 @@ input[readonly] { background: #f7f4ef; }
 
 .card.is-selected { box-shadow: 0 0 0 2px var(--brand), var(--shadow); }
 
+.card.is-sold {
+  opacity: 0.5;
+}
+
+.card.is-sold:hover { transform: none; }
+
 .card-media { position: relative; display: block; }
 
 .card-media img, .photo-fallback {
@@ -739,6 +745,36 @@ input[readonly] { background: #f7f4ef; }
   padding: 6px 12px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.sold-pill {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: rgba(26, 23, 20, 0.88);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sold-flag {
+  margin: 10px 0 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(26, 23, 20, 0.88);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .card-add {
@@ -910,7 +946,7 @@ input[readonly] { background: #f7f4ef; }
 
 .selection-bar strong { display: block; font-weight: 600; }
 
-.selection-bar span,
+.selection-open span,
 .selection-hint {
   display: block;
   color: #d9d3cb;
@@ -1372,7 +1408,7 @@ input[readonly] { background: #f7f4ef; }
   color: #fff;
 }
 
-.sheet-body { overflow: auto; padding: 12px 22px 22px; }
+.sheet-body { overflow: auto; padding: 12px 22px 22px; flex: 1; min-height: 0; }
 
 .composer-grid {
   display: grid;
@@ -1381,15 +1417,26 @@ input[readonly] { background: #f7f4ef; }
   align-items: start;
 }
 
-.form-pane .button {
-  display: flex;
+.composer-foot {
+  display: grid;
+  gap: 8px;
+  padding: 14px 22px 18px;
+  border-top: 1px solid var(--line);
+  background: rgba(244, 240, 234, 0.96);
+}
+
+.composer-foot .button {
   width: 100%;
-  margin-top: 4px;
+}
+
+.composer-foot .hint,
+.composer-foot .form-error {
+  margin: 0;
 }
 
 .reset {
   display: flex;
-  margin: 0 0 8px;
+  margin: 0;
 }
 
 .sheet-success {

@@ -4,7 +4,7 @@ import { limits } from "../branding";
 import { PropertyCard } from "../components/PropertyCard";
 import { ShortlistBar } from "../components/ShortlistBar";
 import { TopBar } from "../components/TopBar";
-import { formatPrice, homeCount, titleCase } from "../format";
+import { formatGroupedDigits, formatPrice, homeCount, parseGroupedDigits, titleCase } from "../format";
 import { emptyListFilters, readListView, writeListView, type ListFilters } from "../storage";
 import type { Property } from "../types";
 import { useShortlist } from "../useShortlist";
@@ -168,18 +168,18 @@ export function SelectPage() {
             Min price
             <input
               inputMode="numeric"
-              value={filters.minPrice}
+              value={formatGroupedDigits(filters.minPrice)}
               placeholder="€"
-              onChange={(event) => updateFilter("minPrice", event.target.value.replace(/[^\d]/g, ""))}
+              onChange={(event) => updateFilter("minPrice", parseGroupedDigits(event.target.value))}
             />
           </label>
           <label>
             Max price
             <input
               inputMode="numeric"
-              value={filters.maxPrice}
+              value={formatGroupedDigits(filters.maxPrice)}
               placeholder="€"
-              onChange={(event) => updateFilter("maxPrice", event.target.value.replace(/[^\d]/g, ""))}
+              onChange={(event) => updateFilter("maxPrice", parseGroupedDigits(event.target.value))}
             />
           </label>
         </div>

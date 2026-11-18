@@ -25,7 +25,9 @@ export function ShortlistBar({ properties, selectedIds, limitNote, onToggle, onC
     .map((id) => properties.find((property) => property.id === id))
     .filter((property): property is Property => Boolean(property));
   const onProperty = Boolean(activeId);
+  const activeProperty = activeId ? properties.find((property) => property.id === activeId) : undefined;
   const alreadyInList = Boolean(activeId && selectedIds.includes(activeId));
+  const activeSold = activeProperty?.sold === true;
   const showBar = onProperty || selected.length > 0;
   const canViewList = selected.length > 0;
 
@@ -52,7 +54,7 @@ export function ShortlistBar({ properties, selectedIds, limitNote, onToggle, onC
     <>
       {showBar ? (
         <div className={onProperty ? "selection-bar selection-bar-property" : "selection-bar"}>
-          {onProperty && activeId ? (
+          {onProperty && activeId && !(activeSold && !alreadyInList) ? (
             <button
               type="button"
               className={alreadyInList ? "button secondary selection-primary" : "button selection-primary"}
@@ -69,7 +71,13 @@ export function ShortlistBar({ properties, selectedIds, limitNote, onToggle, onC
               <span>{limitNote ? "8 is the most you can send at once." : "View shortlist"}</span>
             </button>
           ) : onProperty ? (
-            <p className="selection-hint">{limitNote ? "8 is the most you can send at once." : "Build a shortlist, then send."}</p>
+            <p className="selection-hint">
+              {activeSold
+                ? "This home is sold."
+                : limitNote
+                  ? "8 is the most you can send at once."
+                  : "Build a shortlist, then send."}
+            </p>
           ) : null}
 
           {!onProperty && canViewList ? (
