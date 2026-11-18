@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { agency, agent } from "../branding";
 import { readSession, signIn } from "../storage";
@@ -7,6 +7,17 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const frame = requestAnimationFrame(() => window.scrollTo(0, 0));
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && active.matches("input, textarea, select")) {
+      active.blur();
+      window.scrollTo(0, 0);
+    }
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   if (readSession() || signedIn) return <Navigate to="/select" replace />;
 
@@ -57,7 +68,6 @@ export function LoginPage() {
           <button type="submit" className="button">
             Continue
           </button>
-          <p className="hint">Demo sign-in. Any password works.</p>
         </form>
       </section>
     </main>

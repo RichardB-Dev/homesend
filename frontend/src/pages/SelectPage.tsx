@@ -45,6 +45,7 @@ export function SelectPage() {
   const [query, setQuery] = useState(() => readListView().query);
   const [filters, setFilters] = useState<Filters>(() => readListView().filters);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [slowLoad, setSlowLoad] = useState(false);
   const placed = useRef(false);
   const shortlist = useShortlist();
 
@@ -64,6 +65,15 @@ export function SelectPage() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      setSlowLoad(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setSlowLoad(true), 1500);
+    return () => window.clearTimeout(timer);
+  }, [loading]);
 
   useEffect(() => {
     const saved = readListView();
@@ -240,9 +250,16 @@ export function SelectPage() {
           </div>
         ) : null}
 
-        <p className="result-count" aria-live="polite">
-          {loading ? "Loading homes" : homeCount(visible.length)}
-        </p>
+        {loading ? (
+          <div className="loading-status" aria-live="polite" aria-busy="true">
+            <p className="loading-title">Loading homes…</p>
+            {slowLoad ? <p className="loading-note">This can take a moment.</p> : null}
+          </div>
+        ) : (
+          <p className="result-count" aria-live="polite">
+            {homeCount(visible.length)}
+          </p>
+        )}
 
         {loading ? (
           <div className="grid" aria-hidden="true">

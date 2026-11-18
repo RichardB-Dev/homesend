@@ -322,9 +322,25 @@ export function PropertyPage() {
                     <span aria-hidden="true">→</span>
                   </button>
                 ) : null}
-                <p className="lightbox-count">
-                  {viewer + 1} / {images.length}
-                </p>
+                <div className="lightbox-foot">
+                  {images.length > 1 ? (
+                    <button type="button" className="lightbox-foot-nav" aria-label="Previous photo" onClick={() => showInViewer(viewer - 1)}>
+                      <span aria-hidden="true">←</span>
+                    </button>
+                  ) : (
+                    <span className="lightbox-foot-spacer" aria-hidden="true" />
+                  )}
+                  <p className="lightbox-count">
+                    {viewer + 1} / {images.length}
+                  </p>
+                  {images.length > 1 ? (
+                    <button type="button" className="lightbox-foot-nav" aria-label="Next photo" onClick={() => showInViewer(viewer + 1)}>
+                      <span aria-hidden="true">→</span>
+                    </button>
+                  ) : (
+                    <span className="lightbox-foot-spacer" aria-hidden="true" />
+                  )}
+                </div>
               </div>
             ) : null}
           </>

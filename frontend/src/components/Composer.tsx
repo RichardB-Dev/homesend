@@ -65,6 +65,25 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
     };
   }, [onClose, sending]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    const viewport = window.visualViewport;
+    function syncHeight() {
+      const height = viewport?.height ?? window.innerHeight;
+      root.style.setProperty("--vvh", `${height}px`);
+    }
+    syncHeight();
+    viewport?.addEventListener("resize", syncHeight);
+    viewport?.addEventListener("scroll", syncHeight);
+    window.addEventListener("resize", syncHeight);
+    return () => {
+      viewport?.removeEventListener("resize", syncHeight);
+      viewport?.removeEventListener("scroll", syncHeight);
+      window.removeEventListener("resize", syncHeight);
+      root.style.removeProperty("--vvh");
+    };
+  }, []);
+
   function chooseClient(client: Client) {
     setClientName(client.name);
     setClientEmail(client.email);
