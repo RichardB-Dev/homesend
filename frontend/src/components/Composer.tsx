@@ -1,7 +1,8 @@
-import { useEffect, useId, useState, type FormEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { sendClientEmail } from "../api";
 import { agent, defaultFooter, defaultIntro, limits } from "../branding";
+import { matchingClients, type Client } from "../clients";
 import { homeCount } from "../format";
 import { rememberSent, saveTemplate, snapshotHome } from "../storage";
 import type { Property } from "../types";
@@ -18,22 +19,42 @@ type Props = {
 };
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const suggestLimit = 8;
+
+type SuggestField = "name" | "email" | "phone";
 
 export function Composer({ properties, intro, footer, onIntro, onFooter, onClose, onSent }: Props) {
   const navigate = useNavigate();
   const titleId = useId();
+  const listId = useId();
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
+  const [suggestField, setSuggestField] = useState<SuggestField | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const suggestOpen = useRef(false);
   const [pane, setPane] = useState<"form" | "preview">("form");
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ delivered: boolean; id: string; count: number; name: string } | null>(null);
 
+  const suggestQuery = suggestField === "name" ? clientName : suggestField === "email" ? clientEmail : suggestField === "phone" ? clientPhone : "";
+  const suggestions = useMemo(() => {
+    if (!suggestField || !suggestQuery.trim()) return [];
+    return matchingClients(suggestQuery).slice(0, suggestLimit);
+  }, [suggestField, suggestQuery]);
+  const highlighted = Math.min(activeIndex, Math.max(suggestions.length - 1, 0));
+  suggestOpen.current = suggestions.length > 0;
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [suggestQuery, suggestField]);
+
   useEffect(() => {
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !sending) onClose();
+      if (event.key === "Escape" && !sending && !suggestOpen.current) onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -41,6 +62,50 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
       window.removeEventListener("keydown", onKey);
     };
   }, [onClose, sending]);
+
+  function chooseClient(client: Client) {
+    setClientName(client.name);
+    setClientEmail(client.email);
+    setClientPhone(client.phone);
+    setSuggestField(null);
+    setFieldError(null);
+  }
+
+  function onSuggestKey(event: ReactKeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Escape" && suggestions.length > 0) {
+      event.preventDefault();
+      event.stopPropagation();
+      suggestOpen.current = false;
+      setSuggestField(null);
+      return;
+    }
+    if (suggestions.length === 0) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveIndex((index) => (index + 1) % suggestions.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveIndex((index) => (index - 1 + suggestions.length) % suggestions.length);
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      chooseClient(suggestions[highlighted]);
+    }
+  }
+
+  function suggestProps(field: SuggestField) {
+    const open = suggestField === field && suggestions.length > 0;
+    return {
+      role: "combobox" as const,
+      "aria-autocomplete": "list" as const,
+      "aria-expanded": open,
+      "aria-controls": listId,
+      "aria-activedescendant": open ? `${listId}-${suggestions[highlighted]?.id}` : undefined,
+      autoComplete: "off",
+      onFocus: () => setSuggestField(field),
+      onKeyDown: onSuggestKey,
+      onBlur: () => setSuggestField(null),
+    };
+  }
 
   function resetCopy() {
     onIntro(defaultIntro);
@@ -148,23 +213,57 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
                 <form className="form-pane" onSubmit={onSubmit}>
                   <label>
                     Client name
-                    <input
-                      value={clientName}
-                      maxLength={limits.clientName}
-                      onChange={(event) => setClientName(event.target.value)}
-                      autoComplete="name"
-                      autoFocus
-                    />
+                    <span className="suggest">
+                      <input
+                        value={clientName}
+                        maxLength={limits.clientName}
+                        onChange={(event) => {
+                          setClientName(event.target.value);
+                          setSuggestField("name");
+                        }}
+                        autoFocus
+                        {...suggestProps("name")}
+                      />
+                      {suggestField === "name" ? (
+                        <SuggestList id={listId} clients={suggestions} activeIndex={highlighted} onPick={chooseClient} onHover={setActiveIndex} />
+                      ) : null}
+                    </span>
                   </label>
                   <label>
                     Client email
-                    <input
-                      type="email"
-                      value={clientEmail}
-                      onChange={(event) => setClientEmail(event.target.value)}
-                      autoComplete="email"
-                      inputMode="email"
-                    />
+                    <span className="suggest">
+                      <input
+                        type="email"
+                        value={clientEmail}
+                        inputMode="email"
+                        onChange={(event) => {
+                          setClientEmail(event.target.value);
+                          setSuggestField("email");
+                        }}
+                        {...suggestProps("email")}
+                      />
+                      {suggestField === "email" ? (
+                        <SuggestList id={listId} clients={suggestions} activeIndex={highlighted} onPick={chooseClient} onHover={setActiveIndex} />
+                      ) : null}
+                    </span>
+                  </label>
+                  <label>
+                    Client phone
+                    <span className="suggest">
+                      <input
+                        type="tel"
+                        value={clientPhone}
+                        inputMode="tel"
+                        onChange={(event) => {
+                          setClientPhone(event.target.value);
+                          setSuggestField("phone");
+                        }}
+                        {...suggestProps("phone")}
+                      />
+                      {suggestField === "phone" ? (
+                        <SuggestList id={listId} clients={suggestions} activeIndex={highlighted} onPick={chooseClient} onHover={setActiveIndex} />
+                      ) : null}
+                    </span>
                   </label>
                   <label>
                     Introduction
@@ -180,6 +279,7 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
                   <label>
                     Footer
                     <textarea
+                      className="footer-field"
                       value={footer}
                       maxLength={limits.footer}
                       onChange={(event) => {
@@ -205,5 +305,48 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
         )}
       </section>
     </div>
+  );
+}
+
+function SuggestList({
+  id,
+  clients,
+  activeIndex,
+  onPick,
+  onHover,
+}: {
+  id: string;
+  clients: Client[];
+  activeIndex: number;
+  onPick: (client: Client) => void;
+  onHover: (index: number) => void;
+}) {
+  useEffect(() => {
+    const current = clients[activeIndex];
+    if (!current) return;
+    document.getElementById(`${id}-${current.id}`)?.scrollIntoView({ block: "nearest" });
+  }, [activeIndex, clients, id]);
+
+  if (clients.length === 0) return null;
+  return (
+    <ul className="suggest-list" id={id} role="listbox">
+      {clients.map((client, index) => (
+        <li key={client.id} role="presentation">
+          <button
+            type="button"
+            role="option"
+            id={`${id}-${client.id}`}
+            aria-selected={index === activeIndex}
+            onMouseDown={(event) => event.preventDefault()}
+            onMouseEnter={() => onHover(index)}
+            onClick={() => onPick(client)}
+          >
+            <strong>{client.name}</strong>
+            <span>{client.email}</span>
+            <span>{client.phone}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }

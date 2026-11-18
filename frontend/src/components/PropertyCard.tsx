@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { formatPrice, metaLine } from "../format";
+import { rememberListScroll } from "../storage";
 import type { Property } from "../types";
 
 type Props = {
@@ -15,7 +16,7 @@ export function PropertyCard({ property, selected, onToggle }: Props) {
 
   return (
     <article className={selected ? "card is-selected" : "card"}>
-      <Link className="card-link" to={`/property/${property.id}`}>
+      <Link className="card-link" to={`/property/${property.id}`} onClick={rememberListScroll}>
         <span className="card-media">
           {property.imageUrl && !broken ? (
             <img src={property.imageUrl} alt="" loading="lazy" onError={() => setBroken(true)} />

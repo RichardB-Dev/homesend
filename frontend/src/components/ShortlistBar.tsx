@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { formatPrice, homeCount } from "../format";
-import { readTemplate, saveTemplate } from "../storage";
+import { readTemplate, rememberListScroll, saveTemplate } from "../storage";
 import type { Property } from "../types";
 import { Composer } from "./Composer";
 
@@ -15,6 +15,7 @@ type Props = {
 };
 
 export function ShortlistBar({ properties, selectedIds, limitNote, onToggle, onClear, onSent }: Props) {
+  const onList = useLocation().pathname === "/select";
   const titleId = useId();
   const [viewing, setViewing] = useState(false);
   const [open, setOpen] = useState(false);
@@ -76,7 +77,14 @@ export function ShortlistBar({ properties, selectedIds, limitNote, onToggle, onC
             <ul className="shortlist-rows">
               {selected.map((property) => (
                 <li className="shortlist-row" key={property.id}>
-                  <Link className="shortlist-main" to={`/property/${property.id}`} onClick={() => setViewing(false)}>
+                  <Link
+                    className="shortlist-main"
+                    to={`/property/${property.id}`}
+                    onClick={() => {
+                      if (onList) rememberListScroll();
+                      setViewing(false);
+                    }}
+                  >
                     {property.imageUrl.startsWith("https://") ? (
                       <img src={property.imageUrl} alt="" />
                     ) : (

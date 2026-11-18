@@ -1,30 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchProperties } from "../api";
 import { limits } from "../branding";
 import { PropertyCard } from "../components/PropertyCard";
 import { ShortlistBar } from "../components/ShortlistBar";
 import { TopBar } from "../components/TopBar";
 import { formatPrice, homeCount, titleCase } from "../format";
+import { emptyListFilters, readListView, writeListView, type ListFilters } from "../storage";
 import type { Property } from "../types";
 import { useShortlist } from "../useShortlist";
 
-type Filters = {
-  transaction: string;
-  type: string;
-  municipality: string;
-  minBeds: string;
-  minPrice: string;
-  maxPrice: string;
-};
+type Filters = ListFilters;
 
-const emptyFilters: Filters = {
-  transaction: "",
-  type: "",
-  municipality: "",
-  minBeds: "",
-  minPrice: "",
-  maxPrice: "",
-};
+const emptyFilters: Filters = emptyListFilters;
 
 function unique(values: string[]): string[] {
   return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
@@ -51,8 +38,9 @@ export function SelectPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
-  const [filters, setFilters] = useState<Filters>(emptyFilters);
+  const [query, setQuery] = useState(() => readListView().query);
+  const [filters, setFilters] = useState<Filters>(() => readListView().filters);
+  const placed = useRef(false);
   const shortlist = useShortlist();
 
   useEffect(() => {
@@ -71,6 +59,30 @@ export function SelectPage() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    const saved = readListView();
+    writeListView({ query, filters, scrollY: saved.scrollY });
+  }, [query, filters]);
+
+  useEffect(() => {
+    function rememberPlace() {
+      if (!placed.current) return;
+      writeListView({ query, filters, scrollY: window.scrollY });
+    }
+    window.addEventListener("scroll", rememberPlace, { passive: true });
+    return () => window.removeEventListener("scroll", rememberPlace);
+  }, [query, filters]);
+
+  useEffect(() => {
+    if (loading) return;
+    const scrollY = readListView().scrollY;
+    const frame = requestAnimationFrame(() => {
+      if (scrollY > 0) window.scrollTo(0, scrollY);
+      placed.current = true;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [loading]);
 
   const visible = useMemo(
     () => properties.filter((property) => matches(property, query, filters)),

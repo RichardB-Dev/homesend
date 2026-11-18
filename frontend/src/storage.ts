@@ -1,22 +1,64 @@
-import { agent, defaultFooter, defaultIntro, limits } from "./branding";
+import { agent, defaultFooter, defaultIntro, limits, previousDefaultFooter } from "./branding";
 import type { Property, SentHome, SentRecord } from "./types";
 import { shortSummary } from "./format";
 
 const sessionKey = "homesend.session";
 const selectionKey = "homesend.selection";
+const listKey = "homesend.list";
 const templateKey = `homesend.template.${agent.email}`;
 const sentKey = `homesend.sent.${agent.email}`;
 const sentLimit = 50;
 
+const filterKeys = ["transaction", "type", "municipality", "minBeds", "minPrice", "maxPrice"] as const;
+
+export type ListFilters = Record<(typeof filterKeys)[number], string>;
+
+export const emptyListFilters: ListFilters = {
+  transaction: "",
+  type: "",
+  municipality: "",
+  minBeds: "",
+  minPrice: "",
+  maxPrice: "",
+};
+
+export type ListView = {
+  query: string;
+  filters: ListFilters;
+  scrollY: number;
+};
+
 export type Session = { name: string; email: string };
 export type Template = { intro: string; footer: string };
+
+const previousAgentEmail = "hello@georgenayda.com";
+
+function adoptPreviousStore(): void {
+  const pairs = [
+    [`homesend.template.${previousAgentEmail}`, templateKey],
+    [`homesend.sent.${previousAgentEmail}`, sentKey],
+  ];
+  for (const [from, to] of pairs) {
+    if (localStorage.getItem(to)) continue;
+    const raw = localStorage.getItem(from);
+    if (!raw) continue;
+    localStorage.setItem(to, raw.replaceAll(previousAgentEmail, agent.email));
+  }
+}
 
 export function readSession(): Session | null {
   const raw = sessionStorage.getItem(sessionKey);
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as Session;
-    if (parsed.email !== agent.email || parsed.name !== agent.name) return null;
+    if (parsed.name !== agent.name) return null;
+    if (parsed.email === previousAgentEmail) {
+      const session: Session = { name: agent.name, email: agent.email };
+      sessionStorage.setItem(sessionKey, JSON.stringify(session));
+      adoptPreviousStore();
+      return session;
+    }
+    if (parsed.email !== agent.email) return null;
     return parsed;
   } catch {
     return null;
@@ -33,6 +75,43 @@ export function signIn(password: string): string | null {
 export function signOut(): void {
   sessionStorage.removeItem(sessionKey);
   sessionStorage.removeItem(selectionKey);
+  sessionStorage.removeItem(listKey);
+}
+
+export function readListView(): ListView {
+  const raw = sessionStorage.getItem(listKey);
+  const filters = { ...emptyListFilters };
+  if (!raw) return { query: "", filters, scrollY: 0 };
+  try {
+    const parsed = JSON.parse(raw) as Partial<ListView>;
+    if (parsed.filters && typeof parsed.filters === "object") {
+      for (const key of filterKeys) {
+        const value = parsed.filters[key];
+        if (typeof value === "string") filters[key] = value;
+      }
+    }
+    const scrollY = typeof parsed.scrollY === "number" && parsed.scrollY > 0 ? parsed.scrollY : 0;
+    return {
+      query: typeof parsed.query === "string" ? parsed.query : "",
+      filters,
+      scrollY,
+    };
+  } catch {
+    return { query: "", filters, scrollY: 0 };
+  }
+}
+
+export function writeListView(view: ListView): void {
+  sessionStorage.setItem(listKey, JSON.stringify(view));
+}
+
+export function rememberListScroll(): void {
+  const saved = readListView();
+  writeListView({ ...saved, scrollY: window.scrollY });
+}
+
+export function listIsNarrowed(view: ListView = readListView()): boolean {
+  return view.query.trim().length > 0 || Object.values(view.filters).some(Boolean);
 }
 
 export function readSelection(): string[] {
@@ -52,13 +131,16 @@ export function writeSelection(ids: string[]): void {
 }
 
 export function readTemplate(): Template {
+  adoptPreviousStore();
   const raw = localStorage.getItem(templateKey);
   if (!raw) return { intro: defaultIntro, footer: defaultFooter };
   try {
     const parsed = JSON.parse(raw) as Partial<Template>;
+    const stored = typeof parsed.footer === "string" ? parsed.footer : defaultFooter;
+    const footer = stored.replaceAll(previousAgentEmail, agent.email);
     return {
       intro: typeof parsed.intro === "string" ? parsed.intro : defaultIntro,
-      footer: typeof parsed.footer === "string" ? parsed.footer : defaultFooter,
+      footer: footer.trim() === previousDefaultFooter.trim() ? defaultFooter : footer,
     };
   } catch {
     return { intro: defaultIntro, footer: defaultFooter };
@@ -70,6 +152,7 @@ export function saveTemplate(template: Template): void {
 }
 
 export function readSent(): SentRecord[] {
+  adoptPreviousStore();
   const raw = localStorage.getItem(sentKey);
   if (!raw) return [];
   try {

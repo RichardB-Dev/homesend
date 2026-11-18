@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchProperties } from "../api";
+import { homeSend } from "../branding";
 import { formatPrice, metaLine, shortSummary } from "../format";
 import { readSession } from "../storage";
 import type { Property } from "../types";
@@ -67,7 +68,7 @@ export function HomePage() {
       <section className="home-hero">
         <div className="home-copy">
           <p className="eyebrow">
-            <img src="/home-send-icon.svg" alt="" />
+            <img src={homeSend.logo} alt="" />
             Home Send
           </p>
           <h1>Send the right homes in one email.</h1>
@@ -134,7 +135,7 @@ export function HomePage() {
           {sample.length > 0 ? (
             <article className="home-letter" aria-label="Sample email">
               <header>
-                <img src="/home-send-icon.svg" alt="" />
+                <img src={homeSend.logo} alt="" />
                 <strong>Home Send</strong>
               </header>
               <div className="home-letter-body">

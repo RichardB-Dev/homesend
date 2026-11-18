@@ -1,6 +1,6 @@
 export const agent = {
   name: "George Nayda",
-  email: "hello@georgenayda.com",
+  email: "georgenayda@bromleyestatesmarbella.com",
   phone: "+34 951 870 121",
 };
 

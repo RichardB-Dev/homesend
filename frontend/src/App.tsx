@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import { ClientsPage } from "./pages/ClientsPage";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { PropertyPage } from "./pages/PropertyPage";
@@ -30,6 +31,14 @@ export function App() {
         element={
           <RequireAuth>
             <PropertyPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/clients"
+        element={
+          <RequireAuth>
+            <ClientsPage />
           </RequireAuth>
         }
       />
