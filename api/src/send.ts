@@ -1,10 +1,10 @@
 import fs from "fs";
 import path from "path";
 import nodemailer from "nodemailer";
-import { agency, agent, limits } from "./branding";
-import { loadProperties } from "./catalog";
-import { renderEmail, renderText } from "./email";
-import type { Property, SendInput, SendResult } from "./types";
+import { agency, agent, limits } from "./branding.js";
+import { loadProperties } from "./catalog.js";
+import { renderEmail, renderText } from "./email.js";
+import type { Property, SendInput, SendResult } from "./types.js";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

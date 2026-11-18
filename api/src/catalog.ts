@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import type { Property } from "./types";
+import type { Property } from "./types.js";
 
 function asString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;

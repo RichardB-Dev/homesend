@@ -99,7 +99,7 @@ export function SelectPage() {
       <TopBar />
       <main className="page">
         <header className="page-head">
-          <h1>Select homes</h1>
+          <h1>Homes</h1>
           <p>
             Open a home to see it. Add it from here, or from the home itself. Up to {limits.properties} in one email.
           </p>

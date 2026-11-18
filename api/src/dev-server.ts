@@ -1,9 +1,9 @@
 import fs from "fs";
 import http from "http";
 import path from "path";
-import { loadProperties } from "./catalog";
-import { handleSend } from "./send";
-import type { SendInput } from "./types";
+import { loadProperties } from "./catalog.js";
+import { handleSend } from "./send.js";
+import type { SendInput } from "./types.js";
 
 function loadLocalSettings(): void {
   const file = path.join(process.cwd(), "local.settings.json");

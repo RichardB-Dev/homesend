@@ -39,7 +39,7 @@ BROMLEY ESTATES S.L. · CIF B93030716. Your contact details are used to send the
 
 export function resalesListingUrl(reference: string): string {
   const ref = encodeURIComponent(reference);
-  return `https://auth.resales-online.com/en/login?website=resales-online.com&agencyRef=${ref}`;
+  return `https://www.resales-online.com/property/${ref}`;
 }
 
 export const limits = {

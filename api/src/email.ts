@@ -1,5 +1,5 @@
-import { agency } from "./branding";
-import type { Property } from "./types";
+import { agency } from "./branding.js";
+import type { Property } from "./types.js";
 
 function escapeHtml(value: string): string {
   return value

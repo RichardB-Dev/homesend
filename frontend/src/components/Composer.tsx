@@ -21,7 +21,7 @@ type Props = {
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const suggestLimit = 8;
 
-type SuggestField = "name" | "email" | "phone";
+type SuggestField = "name" | "email";
 
 export function Composer({ properties, intro, footer, onIntro, onFooter, onClose, onSent }: Props) {
   const navigate = useNavigate();
@@ -29,7 +29,6 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
   const listId = useId();
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
-  const [clientPhone, setClientPhone] = useState("");
   const [suggestField, setSuggestField] = useState<SuggestField | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const suggestOpen = useRef(false);
@@ -38,7 +37,7 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ delivered: boolean; id: string; count: number; name: string } | null>(null);
 
-  const suggestQuery = suggestField === "name" ? clientName : suggestField === "email" ? clientEmail : suggestField === "phone" ? clientPhone : "";
+  const suggestQuery = suggestField === "name" ? clientName : suggestField === "email" ? clientEmail : "";
   const suggestions = useMemo(() => {
     if (!suggestField || !suggestQuery.trim()) return [];
     return matchingClients(suggestQuery).slice(0, suggestLimit);
@@ -66,7 +65,6 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
   function chooseClient(client: Client) {
     setClientName(client.name);
     setClientEmail(client.email);
-    setClientPhone(client.phone);
     setSuggestField(null);
     setFieldError(null);
   }
@@ -248,24 +246,6 @@ export function Composer({ properties, intro, footer, onIntro, onFooter, onClose
                     </span>
                   </label>
                   <label>
-                    Client phone
-                    <span className="suggest">
-                      <input
-                        type="tel"
-                        value={clientPhone}
-                        inputMode="tel"
-                        onChange={(event) => {
-                          setClientPhone(event.target.value);
-                          setSuggestField("phone");
-                        }}
-                        {...suggestProps("phone")}
-                      />
-                      {suggestField === "phone" ? (
-                        <SuggestList id={listId} clients={suggestions} activeIndex={highlighted} onPick={chooseClient} onHover={setActiveIndex} />
-                      ) : null}
-                    </span>
-                  </label>
-                  <label>
                     Introduction
                     <textarea
                       value={intro}
@@ -343,7 +323,6 @@ function SuggestList({
           >
             <strong>{client.name}</strong>
             <span>{client.email}</span>
-            <span>{client.phone}</span>
           </button>
         </li>
       ))}

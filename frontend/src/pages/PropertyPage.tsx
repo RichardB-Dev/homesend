@@ -39,7 +39,8 @@ export function PropertyPage() {
   const [error, setError] = useState<string | null>(null);
   const [photo, setPhoto] = useState(0);
   const [broken, setBroken] = useState<string[]>([]);
-  const [allPhotos, setAllPhotos] = useState(false);
+  const [viewer, setViewer] = useState<number | null>(null);
+  const [copied, setCopied] = useState(false);
   const shortlist = useShortlist();
 
   useEffect(() => {
@@ -63,22 +64,15 @@ export function PropertyPage() {
     window.scrollTo(0, 0);
     setPhoto(0);
     setBroken([]);
-    setAllPhotos(false);
+    setViewer(null);
+    setCopied(false);
   }, [id]);
 
   useEffect(() => {
-    if (!allPhotos) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setAllPhotos(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = previous;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [allPhotos]);
+    if (!copied) return;
+    const timer = window.setTimeout(() => setCopied(false), 1500);
+    return () => window.clearTimeout(timer);
+  }, [copied]);
 
   const property = properties.find((item) => item.id === id);
   const images = property ? gallery(property).filter((url) => !broken.includes(url)) : [];
@@ -87,7 +81,33 @@ export function PropertyPage() {
   const thumbSlots = 4;
   const morePhotos = images.length > thumbSlots;
   const shown = morePhotos ? images.slice(0, thumbSlots - 1) : images;
-  const selected = property ? shortlist.selected.includes(property.id) : false;
+  function showInViewer(index: number) {
+    if (images.length === 0) return;
+    const next = (index + images.length) % images.length;
+    setPhoto(next);
+    setViewer(next);
+  }
+
+  useEffect(() => {
+    if (viewer == null) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setViewer(null);
+        return;
+      }
+      if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+      event.preventDefault();
+      showInViewer((viewer ?? 0) + (event.key === "ArrowRight" ? 1 : -1));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [viewer, images.length]);
+
   const copy = property ? paragraphs(property.description || property.summary) : [];
   const facts = property
     ? [
@@ -102,7 +122,7 @@ export function PropertyPage() {
     : [];
 
   return (
-    <div className={shortlist.selected.length > 0 ? "app-shell has-bar" : "app-shell"}>
+    <div className="app-shell has-bar">
       <TopBar />
       <div className="return-bar">
         <div className="return-bar-inner">
@@ -134,12 +154,14 @@ export function PropertyPage() {
             <div className="property-layout">
               <div className="property-gallery">
                 {current ? (
-                  <img
-                    className="property-photo"
-                    src={current}
-                    alt=""
-                    onError={() => setBroken((currentBroken) => [...currentBroken, current])}
-                  />
+                  <button type="button" className="property-photo-button" aria-label="View photo larger" onClick={() => showInViewer(currentIndex)}>
+                    <img
+                      className="property-photo"
+                      src={current}
+                      alt=""
+                      onError={() => setBroken((currentBroken) => [...currentBroken, current])}
+                    />
+                  </button>
                 ) : (
                   <span className="photo-fallback tall">{property.reference}</span>
                 )}
@@ -154,7 +176,7 @@ export function PropertyPage() {
                           className={index === currentIndex ? "is-current" : undefined}
                           aria-pressed={index === currentIndex}
                           aria-label={`Photo ${index + 1}`}
-                          onClick={() => setPhoto(index)}
+                          onClick={() => showInViewer(index)}
                         >
                           <img src={url} alt="" onError={() => setBroken((currentBroken) => [...currentBroken, url])} />
                         </button>
@@ -164,7 +186,8 @@ export function PropertyPage() {
                       <button
                         type="button"
                         className={currentIndex >= shown.length ? "see-all is-current" : "see-all"}
-                        onClick={() => setAllPhotos(true)}
+                        aria-label="View the next photo larger"
+                        onClick={() => showInViewer(shown.length)}
                       >
                         <img src={images[shown.length]} alt="" onError={() => setBroken((currentBroken) => [...currentBroken, images[shown.length]])} />
                         <span>See all</span>
@@ -175,7 +198,41 @@ export function PropertyPage() {
               </div>
 
               <div className="property-summary">
-                <p className="reference">{property.reference}</p>
+                <p className="reference">
+                  <span>{property.reference}</span>
+                  <button
+                    type="button"
+                    className="copy-reference"
+                    aria-label={copied ? "Copied" : `Copy ${property.reference}`}
+                    onClick={() => {
+                      const value = property.reference;
+                      const done = () => setCopied(true);
+                      navigator.clipboard.writeText(value).then(done).catch(() => {
+                        const field = document.createElement("textarea");
+                        field.value = value;
+                        field.setAttribute("readonly", "");
+                        field.style.position = "fixed";
+                        field.style.left = "-999px";
+                        document.body.append(field);
+                        field.select();
+                        document.execCommand("copy");
+                        field.remove();
+                        done();
+                      });
+                    }}
+                  >
+                    {copied ? (
+                      <svg viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M4.5 10.5 8 14l7.5-8" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 20 20" aria-hidden="true">
+                        <rect x="7" y="7" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                        <path d="M5 13H4.5A1.5 1.5 0 0 1 3 11.5v-7A1.5 1.5 0 0 1 4.5 3h7A1.5 1.5 0 0 1 13 4.5V5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                      </svg>
+                    )}
+                  </button>
+                </p>
                 <h1>{property.title}</h1>
                 <p className="property-price">{formatPrice(property.price.amount, property.price.currency)}</p>
                 <p className="place">
@@ -192,16 +249,6 @@ export function PropertyPage() {
                     ))}
                   </dl>
                 ) : null}
-                <div className="property-actions">
-                  <button
-                    type="button"
-                    className={selected ? "button secondary" : "button"}
-                    aria-pressed={selected}
-                    onClick={() => shortlist.toggle(property.id)}
-                  >
-                    {selected ? "Remove from list" : "Add to list"}
-                  </button>
-                </div>
                 <div className="property-links">
                   {property.sourceUrl.startsWith("https://") ? (
                     <a className="button secondary" href={property.sourceUrl} target="_blank" rel="noreferrer">
@@ -218,9 +265,6 @@ export function PropertyPage() {
                     <img src="/brand/resales.svg" alt="Resales Online" />
                   </a>
                 </div>
-                {shortlist.limitNote && !selected ? (
-                  <p className="field-error">8 is the most you can send at once.</p>
-                ) : null}
               </div>
             </div>
 
@@ -253,41 +297,33 @@ export function PropertyPage() {
               </section>
             ) : null}
 
-            {allPhotos ? (
+            {viewer != null && images[viewer] ? (
               <div
-                className="overlay"
+                className="lightbox"
+                role="dialog"
+                aria-modal="true"
+                aria-label={`Photo ${viewer + 1} of ${images.length}`}
                 onMouseDown={(event) => {
-                  if (event.target === event.currentTarget) setAllPhotos(false);
+                  if (event.target === event.currentTarget) setViewer(null);
                 }}
               >
-                <section className="sheet photo-sheet" role="dialog" aria-modal="true" aria-label="All photos">
-                  <header className="sheet-head">
-                    <div>
-                      <h2>All photos</h2>
-                      <p>{images.length} photos</p>
-                    </div>
-                    <button type="button" className="text-button" onClick={() => setAllPhotos(false)}>
-                      Close
-                    </button>
-                  </header>
-                  <div className="photo-grid">
-                    {images.map((url, index) => (
-                      <button
-                        key={url}
-                        type="button"
-                        className={index === currentIndex ? "is-current" : undefined}
-                        aria-pressed={index === currentIndex}
-                        aria-label={`Photo ${index + 1}`}
-                        onClick={() => {
-                          setPhoto(index);
-                          setAllPhotos(false);
-                        }}
-                      >
-                        <img src={url} alt="" onError={() => setBroken((currentBroken) => [...currentBroken, url])} />
-                      </button>
-                    ))}
-                  </div>
-                </section>
+                <button type="button" className="lightbox-close" onClick={() => setViewer(null)}>
+                  Close
+                </button>
+                {images.length > 1 ? (
+                  <button type="button" className="lightbox-nav lightbox-prev" aria-label="Previous photo" onClick={() => showInViewer(viewer - 1)}>
+                    <span aria-hidden="true">←</span>
+                  </button>
+                ) : null}
+                <img src={images[viewer]} alt="" onError={() => setBroken((currentBroken) => [...currentBroken, images[viewer]])} />
+                {images.length > 1 ? (
+                  <button type="button" className="lightbox-nav lightbox-next" aria-label="Next photo" onClick={() => showInViewer(viewer + 1)}>
+                    <span aria-hidden="true">→</span>
+                  </button>
+                ) : null}
+                <p className="lightbox-count">
+                  {viewer + 1} / {images.length}
+                </p>
               </div>
             ) : null}
           </>
@@ -301,6 +337,7 @@ export function PropertyPage() {
         onToggle={shortlist.toggle}
         onClear={shortlist.clear}
         onSent={shortlist.clear}
+        activeId={property?.id}
       />
     </div>
   );

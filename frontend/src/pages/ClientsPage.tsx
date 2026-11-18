@@ -13,7 +13,7 @@ export function ClientsPage() {
       <main className="page">
         <header className="page-head">
           <h1>Clients</h1>
-          <p>Sample contacts for this demo. Start typing a name, email, or phone when you send a list, and the rest fills in.</p>
+          <p>Sample contacts for this demo. Start typing a name or email when you send a list, and the rest fills in.</p>
         </header>
 
         <div className="search-wrap">
@@ -45,7 +45,7 @@ export function ClientsPage() {
               <li key={client.id} className="client-row">
                 <strong>{client.name}</strong>
                 <a href={`mailto:${client.email}`}>{client.email}</a>
-                <a href={`tel:${client.phone.replace(/[^\d+]/g, "")}`}>{client.phone}</a>
+                {client.phone ? <a href={`tel:${client.phone.replace(/[^\d+]/g, "")}`}>{client.phone}</a> : null}
               </li>
             ))}
           </ul>

@@ -6,6 +6,9 @@ export type Client = {
 };
 
 export const clients: Client[] = [
+  { id: "c41", name: "Richard Burke", email: "richardburke.acc@gmail.com", phone: "" },
+  { id: "c42", name: "Katia Egorova", email: "eev.egorova@gmail.com", phone: "" },
+  { id: "c43", name: "George Nayda", email: "hello@georgenayda.com", phone: "+34 951 870 121" },
   { id: "c01", name: "Amelia Hart", email: "amelia.hart@example.com", phone: "+34 611 204 118" },
   { id: "c02", name: "James Whitaker", email: "james.whitaker@example.com", phone: "+34 622 418 903" },
   { id: "c03", name: "Sofia Navarro", email: "sofia.navarro@example.com", phone: "+34 633 771 240" },
@@ -46,7 +49,7 @@ export const clients: Client[] = [
   { id: "c38", name: "Priya Shah", email: "priya.shah@example.com", phone: "+44 7700 900 126" },
   { id: "c39", name: "Anders Holm", email: "anders.holm@example.com", phone: "+45 20 44 18 92" },
   { id: "c40", name: "Victoria Lane", email: "victoria.lane@example.com", phone: "+44 7700 900 337" },
-];
+].sort((a, b) => a.name.localeCompare(b.name, "en", { sensitivity: "base" }));
 
 function compact(value: string): string {
   return value.toLowerCase().replace(/[\s+()-]/g, "");

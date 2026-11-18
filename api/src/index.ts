@@ -1,7 +1,7 @@
 import { app, type HttpRequest, type HttpResponseInit, type InvocationContext } from "@azure/functions";
-import { loadProperties } from "./catalog";
-import { handleSend } from "./send";
-import type { SendInput } from "./types";
+import { loadProperties } from "./catalog.js";
+import { handleSend } from "./send.js";
+import type { SendInput } from "./types.js";
 
 app.http("properties", {
   methods: ["GET"],

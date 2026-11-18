@@ -1,4 +1,5 @@
 import { agent, defaultFooter, defaultIntro, limits, previousDefaultFooter } from "./branding";
+import { exampleDrafts } from "./exampleSent";
 import type { Property, SentHome, SentRecord } from "./types";
 import { shortSummary } from "./format";
 
@@ -151,16 +152,31 @@ export function saveTemplate(template: Template): void {
   localStorage.setItem(templateKey, JSON.stringify(template));
 }
 
+const exampleSent: SentRecord[] = exampleDrafts.map((draft) => ({
+  ...draft,
+  intro: defaultIntro,
+  footer: defaultFooter,
+  delivered: true,
+}));
+
+function isExample(record: SentRecord): boolean {
+  return record.id.startsWith("example-");
+}
+
 export function readSent(): SentRecord[] {
   adoptPreviousStore();
   const raw = localStorage.getItem(sentKey);
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw) as SentRecord[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
+  let stored: SentRecord[] = [];
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw) as SentRecord[];
+      stored = Array.isArray(parsed) ? parsed.filter((record) => !isExample(record)) : [];
+    } catch {
+      stored = [];
+    }
   }
+  const present = new Set(stored.map((record) => record.id));
+  return [...stored, ...exampleSent.filter((record) => !present.has(record.id))];
 }
 
 export function snapshotHome(property: Property): SentHome {
@@ -186,7 +202,7 @@ export function rememberSent(record: Omit<SentRecord, "id" | "sentAt">): SentRec
     id: crypto.randomUUID(),
     sentAt: new Date().toISOString(),
   };
-  const next = [saved, ...readSent()].slice(0, sentLimit);
+  const next = [saved, ...readSent().filter((record) => !record.id.startsWith("example-"))].slice(0, sentLimit);
   localStorage.setItem(sentKey, JSON.stringify(next));
   return saved;
 }
