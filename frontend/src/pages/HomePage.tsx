@@ -67,7 +67,7 @@ export function HomePage() {
       <section className="home-hero">
         <div className="home-copy">
           <p className="eyebrow">
-            <img src="/homesend-icon.png" alt="" />
+            <img src="/home-send-icon.svg" alt="" />
             Home Send
           </p>
           <h1>Send the right homes in one email.</h1>
@@ -134,7 +134,7 @@ export function HomePage() {
           {sample.length > 0 ? (
             <article className="home-letter" aria-label="Sample email">
               <header>
-                <img src="/homesend-icon.png" alt="" />
+                <img src="/home-send-icon.svg" alt="" />
                 <strong>Home Send</strong>
               </header>
               <div className="home-letter-body">

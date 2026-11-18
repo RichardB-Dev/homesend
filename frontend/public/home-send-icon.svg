@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="270 295 690 655" role="img" aria-labelledby="logo-title logo-description">
+  <title id="logo-title">Home Send icon</title>
+  <desc id="logo-description">Three overlapping mint-green property cards. The front card features a white house and two lines representing a property listing.</desc>
+  <defs>
+    <linearGradient id="back-card" x1="0" y1="0" x2="1" y2="0.5" gradientUnits="objectBoundingBox">
+      <stop stop-color="#CDEBE2"/>
+      <stop offset="1" stop-color="#B2DFD0"/>
+    </linearGradient>
+    <linearGradient id="middle-card" x1="0" y1="0" x2="1" y2="0.45" gradientUnits="objectBoundingBox">
+      <stop stop-color="#B1DBCD"/>
+      <stop offset="1" stop-color="#90C9B5"/>
+    </linearGradient>
+    <linearGradient id="card-border" x1="0" y1="0" x2="1" y2="0.25" gradientUnits="objectBoundingBox">
+      <stop stop-color="#BCE5D9"/>
+      <stop offset="1" stop-color="#7DC5AC"/>
+    </linearGradient>
+    <linearGradient id="card-green" x1="0" y1="0.4" x2="1" y2="0.6" gradientUnits="objectBoundingBox">
+      <stop stop-color="#3C9F7E"/>
+      <stop offset="1" stop-color="#39A583"/>
+    </linearGradient>
+    <clipPath id="front-outline">
+      <path d="M556 340 H864 C893 340 916 363 916 393 V764 C916 802 892 830 853 830 H567 C528 830 504 802 504 764 V393 C504 363 527 340 556 340 Z"/>
+    </clipPath>
+  </defs>
+  <!-- Back card in the curated stack. -->
+  <path fill="url(#back-card)" d="M379 495 L428 811 C433 842 449 858 476 860 L791 830 L461 903 C433 912 409 899 398 873 L314 560 C307 535 324 509 349 502 Z"/>
+  <!-- Middle card, offset to reveal the stack. -->
+  <path fill="url(#middle-card)" d="M449 423 L483 420 V763 C483 794 500 813 531 818 L797 829 L505 851 C474 854 449 834 443 806 L398 478 C394 450 413 427 449 423 Z"/>
+  <!-- Main listing card. -->
+  <path fill="url(#card-border)" d="M556 340 H864 C893 340 916 363 916 393 V764 C916 802 892 830 853 830 H567 C528 830 504 802 504 764 V393 C504 363 527 340 556 340 Z"/>
+  <g clip-path="url(#front-outline)">
+    <path fill="url(#card-green)" d="M504 630 V393 C504 363 527 340 556 340 H864 C893 340 916 363 916 393 V630 Z"/>
+    <path fill="#FFFFFF" d="M526 630 H895 V763 C895 787 879 807 852 807 H569 C543 807 526 790 526 763 Z"/>
+  </g>
+  <!-- The house is a single clean reversed-out shape. -->
+  <path fill="#FFFFFF" d="M705 399 Q710 394 714 399 L814 489 Q819 495 810 495 H792 V584 Q792 589 787 589 H738 Q733 589 733 584 V526 Q733 519 726 519 H694 Q687 519 687 526 V585 Q687 589 682 589 H633 Q628 589 628 584 V495 H609 Q601 495 607 489 Z"/>
+  <!-- Two editorial lines on the listing card. -->
+  <rect x="573" y="671" width="278" height="29" rx="14.5" fill="url(#card-green)"/>
+  <rect x="573" y="727" width="211" height="29" rx="14.5" fill="url(#card-green)"/>
+</svg>

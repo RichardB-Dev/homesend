@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { resalesListingUrl } from "../branding";
 import { formatPrice, metaLine } from "../format";
 import type { Property } from "../types";
 
@@ -25,23 +24,15 @@ export function PropertyCard({ property, selected, onToggle }: Props) {
           )}
           <span className="price-pill">{formatPrice(property.price.amount, property.price.currency)}</span>
         </span>
-      </Link>
-      <a
-        className="card-ref"
-        href={resalesListingUrl(property.reference)}
-        target="_blank"
-        rel="noreferrer"
-      >
-        <span>{property.reference}</span>
-        <span>Resales Online</span>
-      </a>
-      <Link className="card-link card-body" to={`/property/${property.id}`}>
-        <span className="card-title">{property.title}</span>
-        <span className="place">
-          {property.municipality}
-          {property.type ? ` · ${property.type}` : ""}
+        <span className="card-body">
+          <span className="reference">{property.reference}</span>
+          <span className="card-title">{property.title}</span>
+          <span className="place">
+            {property.municipality}
+            {property.type ? ` · ${property.type}` : ""}
+          </span>
+          {meta ? <span className="meta">{meta}</span> : null}
         </span>
-        {meta ? <span className="meta">{meta}</span> : null}
       </Link>
       <button
         type="button"

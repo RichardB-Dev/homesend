@@ -33,8 +33,8 @@ export function LoginPage() {
           }}
         >
           <p className="eyebrow">
-            <img src="/homesend-icon.png" alt="" />
-            Home Send
+            <img src={agency.logo} alt="" />
+            {agency.shortName}
           </p>
           <h1>Sign in</h1>
           <label>

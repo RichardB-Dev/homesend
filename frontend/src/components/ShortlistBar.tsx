@@ -1,6 +1,5 @@
 import { useEffect, useId, useState } from "react";
 import { Link } from "react-router-dom";
-import { resalesListingUrl } from "../branding";
 import { formatPrice, homeCount } from "../format";
 import { readTemplate, saveTemplate } from "../storage";
 import type { Property } from "../types";
@@ -51,14 +50,9 @@ export function ShortlistBar({ properties, selectedIds, limitNote, onToggle, onC
             <strong>{homeCount(selected.length)}</strong>
             <span>{limitNote ? "8 is the most you can send at once." : "View shortlist"}</span>
           </button>
-          <div className="selection-actions">
-            <button type="button" className="selection-clear" onClick={clearList}>
-              Clear
-            </button>
-            <button type="button" className="button" onClick={() => setOpen(true)}>
-              Send to client
-            </button>
-          </div>
+          <button type="button" className="button" onClick={() => setOpen(true)}>
+            Send to client
+          </button>
         </div>
       ) : null}
 
@@ -97,9 +91,6 @@ export function ShortlistBar({ properties, selectedIds, limitNote, onToggle, onC
                     </span>
                   </Link>
                   <div className="shortlist-side">
-                    <a href={resalesListingUrl(property.reference)} target="_blank" rel="noreferrer">
-                      {property.reference} · Resales
-                    </a>
                     {property.sourceUrl.startsWith("https://") ? (
                       <a href={property.sourceUrl} target="_blank" rel="noreferrer">
                         Bromley Estates

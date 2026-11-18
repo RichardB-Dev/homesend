@@ -1,5 +1,5 @@
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { agent } from "../branding";
+import { agency, agent } from "../branding";
 import { signOut } from "../storage";
 
 export function TopBar() {
@@ -10,7 +10,7 @@ export function TopBar() {
     <header className="topbar">
       <div className="topbar-inner">
         <Link className="brand" to="/select">
-          <img src="/homesend-icon.png" alt="" />
+          <img src={agency.logo} alt="" />
           <span>Home Send</span>
         </Link>
         <nav className="nav" aria-label="Sections">

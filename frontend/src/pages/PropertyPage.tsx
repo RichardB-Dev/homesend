@@ -132,15 +132,7 @@ export function PropertyPage() {
               </div>
 
               <div className="property-summary">
-                <a
-                  className="resales-link"
-                  href={resalesListingUrl(property.reference)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <span>{property.reference}</span>
-                  <span>Resales Online</span>
-                </a>
+                <p className="reference">{property.reference}</p>
                 <h1>{property.title}</h1>
                 <p className="property-price">{formatPrice(property.price.amount, property.price.currency)}</p>
                 <p className="place">
@@ -166,11 +158,22 @@ export function PropertyPage() {
                   >
                     {selected ? "Remove from list" : "Add to list"}
                   </button>
+                </div>
+                <div className="property-links">
                   {property.sourceUrl.startsWith("https://") ? (
                     <a className="button secondary" href={property.sourceUrl} target="_blank" rel="noreferrer">
                       View on Bromley Estates
                     </a>
                   ) : null}
+                  <a
+                    className="resales-button"
+                    href={resalesListingUrl(property.reference)}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Resales Online"
+                  >
+                    <img src="/brand/resales.svg" alt="Resales Online" />
+                  </a>
                 </div>
                 {shortlist.limitNote && !selected ? (
                   <p className="field-error">8 is the most you can send at once.</p>
