@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchProperties } from "../api";
 import { homeSend } from "../branding";
+import { MarketingNav } from "../components/MarketingNav";
 import { formatPrice, metaLine, shortSummary } from "../format";
 import { readSession } from "../storage";
 import type { Property } from "../types";
 
-const sampleIds = ["bemd1888", "bemd3173", "bemv1806", "bemd1186"];
+const sampleIds = ["bemd1888", "bemd3173"];
 
 const oldWay = [
   {
@@ -47,9 +48,9 @@ const sampleIntro =
 function pickSample(list: Property[]): Property[] {
   const byId = new Map(list.map((property) => [property.id, property]));
   const chosen = sampleIds.map((id) => byId.get(id)).filter((property): property is Property => Boolean(property));
-  if (chosen.length >= 3) return chosen;
+  if (chosen.length >= 2) return chosen.slice(0, 2);
   const rest = list.filter((property) => !sampleIds.includes(property.id) && property.imageUrl.startsWith("https://"));
-  return [...chosen, ...rest].slice(0, 4);
+  return [...chosen, ...rest].slice(0, 2);
 }
 
 export function HomePage() {
@@ -75,12 +76,9 @@ export function HomePage() {
 
   return (
     <div className="home">
+      <MarketingNav />
       <section className="home-hero">
         <div className="home-copy">
-          <p className="eyebrow">
-            <img src={homeSend.logo} alt="" />
-            {homeSend.name}
-          </p>
           <h1>From shortlist to inbox in one go.</h1>
           <p className="home-lead">
             Pick the homes that fit. Write a short note. Your client opens one finished email—with your name on it.
@@ -89,9 +87,9 @@ export function HomePage() {
             <Link className="button" to={next}>
               {action}
             </Link>
-            <a className="text-button" href="#sample">
-              See the email
-            </a>
+            <Link className="text-button" to="/pricing">
+              See pricing
+            </Link>
           </div>
         </div>
         <figure className="home-photo">
@@ -122,7 +120,7 @@ export function HomePage() {
           <h2 id="sample-title">This is what they open.</h2>
           <p>Photographs, prices, towns, and a short note in your voice—already put together.</p>
           <Link className="button" to={next}>
-            {action}
+            Try now
           </Link>
         </div>
         <div className="home-sample-letter">
@@ -171,15 +169,23 @@ export function HomePage() {
             </li>
           ))}
         </ol>
+        <p className="home-pricing-path">
+          Ready for a desk? <Link to="/pricing">See pricing</Link>
+        </p>
       </section>
 
       <section className="home-close">
         <img src="/hero-detail.jpg" alt="" />
         <div>
           <h2>One shortlist. One email. Done.</h2>
-          <Link className="button" to={next}>
-            {action}
-          </Link>
+          <div className="home-actions">
+            <Link className="button" to={next}>
+              {action}
+            </Link>
+            <Link className="text-button" to="/pricing">
+              See pricing
+            </Link>
+          </div>
         </div>
       </section>
     </div>

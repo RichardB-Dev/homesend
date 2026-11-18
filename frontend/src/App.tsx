@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { ClientsPage } from "./pages/ClientsPage";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
+import { PricingPage } from "./pages/PricingPage";
 import { PropertyPage } from "./pages/PropertyPage";
 import { SelectPage } from "./pages/SelectPage";
 import { SentPage } from "./pages/SentPage";
@@ -17,6 +18,7 @@ export function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/pricing" element={<PricingPage />} />
       <Route path="/sign-in" element={<LoginPage />} />
       <Route
         path="/select"

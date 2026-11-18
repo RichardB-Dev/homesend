@@ -8,6 +8,14 @@ export const agent = {
 export const homeSend = {
   name: "Home Send",
   logo: "/logo_refined.svg",
+  contactEmail: "hello@homesend.app",
+};
+
+export const pricing = {
+  agent: { monthly: 99, yearly: 990 },
+  agency: { monthly: 299, yearly: 2990, seats: 10 },
+  extraSeat: 49,
+  founding: { monthly: 199, agencies: 3, months: 12 },
 };
 
 export const agency = {
